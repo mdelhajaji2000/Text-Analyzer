@@ -19,6 +19,7 @@ namespace STL_type
             };
 
             _node* _head;
+            _node* _tail;
             std::size_t _size;
 
         public:
@@ -111,11 +112,16 @@ namespace STL_type
 
             iterator insert_after(iterator it_pos, const T& value)
             {
-                _node* new_node = new _node(value);
                 _node* curr = it_pos._curr;
+                if (!curr)
+                    return end();
+                _node* new_node = new _node(value);
                 new_node->_next = curr->_next;
                 curr->_next = new_node;
                 _size++;
+
+                if (_tail == curr)
+                    _tail = new_node;
 
                 return iterator(new_node);
             }
@@ -123,7 +129,15 @@ namespace STL_type
             iterator erase_after(iterator it_pos)
             {
                 _node* curr = it_pos._curr;
+
+                if (!curr || !curr->_next)
+                    return end();
+
                 _node* node_to_erase = curr->_next;
+
+                if (node_to_erase->_next == nullptr)
+                    _tail = curr;
+
                 curr->_next = node_to_erase->_next;
                 delete node_to_erase;
 
@@ -137,9 +151,9 @@ namespace STL_type
                 clear();
             }
 
-            sList() noexcept : _head(nullptr), _size(0) {}
+            sList() noexcept : _head(nullptr), _tail(nullptr), _size(0) {}
 
-            sList(const sList& other) : _head(nullptr), _size(0)
+            sList(const sList& other) : _head(nullptr), _tail(nullptr), _size(0)
             {
                 if (!other._head)
                     return;
@@ -155,14 +169,17 @@ namespace STL_type
                     _curr_this = _curr_this->_next;
                     _curr_other = _curr_other->_next;
                 }
-
+                _tail = _curr_this;
                 _size = other._size;
             }
 
             sList(sList&& other) noexcept
-                : _head(other._head), _size(other._size)
+                : _head(other._head),
+                  _tail(other._tail),
+                  _size(other._size)
             {
                 other._head = nullptr;
+                other._tail = nullptr;
                 other._size = 0;
             }
 
@@ -173,8 +190,10 @@ namespace STL_type
 
                 clear();
                 _head = other._head;
+                _tail = other._tail;
                 _size = other._size;
                 other._head = nullptr;
+                other._tail = nullptr;
                 other._size = 0;
 
                 return *this;
@@ -201,6 +220,7 @@ namespace STL_type
                     _curr_other = _curr_other->_next;
                 }
 
+                _tail = _curr_this;
                 _size = other._size;
                 return *this;
                 
@@ -222,6 +242,7 @@ namespace STL_type
                 }
                 
                 _head = nullptr;
+                _tail = nullptr;
                 _size = 0;
             }
 
@@ -258,5 +279,45 @@ namespace STL_type
                 --_size;
             }
 
+            void push_back(const T& value)
+            {
+                _node* new_node = new _node(value, nullptr);
+
+                if (_size == 0)
+                {
+                    _head = new_node;
+                    _tail = new_node;
+                }
+                else
+                {
+                    _tail->_next = new_node;
+                    _tail = new_node;
+                }
+
+                ++_size;
+            }
+
+            void pop_back()
+            {
+                if (_size == 0)
+                    return;
+
+                if (_size == 1)
+                {
+                    clear();
+                    return;
+                }
+                
+                _node* curr = _head;
+                while (curr->_next != _tail)
+                {
+                    curr = curr->_next;
+                }
+                
+                delete _tail;
+                curr->_next = nullptr;
+                _tail = curr;
+                --_size;
+            }
     };
 }
