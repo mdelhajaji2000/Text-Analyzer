@@ -14,9 +14,9 @@ class FileReader
     public:
         explicit FileReader(const std::string& path) noexcept : _path(path) {}
 
-        bool read_all(std::string& out)
+        bool read_all(std::string& out) const
         {
-            std::fstream file;
+            std::ifstream file;
             file.open(_path, std::ios::in);
             std::string line;
             if (file.is_open())
@@ -35,7 +35,7 @@ class FileReader
 
         bool read_lines(STL_type::arr<std::string>& lines_arr_container) const
         {
-            std::fstream file;
+            std::ifstream file;
             file.open(_path, std::ios::in);
             std::string line;
             if (file.is_open())
